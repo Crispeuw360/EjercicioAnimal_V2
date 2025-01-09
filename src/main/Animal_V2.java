@@ -8,8 +8,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
-import clases.Animal;
+import clases.*;
 import utilidades.MyObjectOutputStream;
 import utilidades.Utilidades;
 
@@ -24,7 +25,7 @@ public class Animal_V2 {
 		return Utilidades.leerInt();
 	}
 
-	public static void mostrarAnimales(File fich) {
+	public static void mostrarAnimales(File fich,ArrayList<Animal> animales) {
 		boolean finArchivo = false;
 		if (fich.exists()) {
 			try {
@@ -34,7 +35,7 @@ public class Animal_V2 {
 				while (!finArchivo) {
 					try {
 						Animal aux = (Animal) ois.readObject();
-						System.out.println(aux.toString());
+						animales.add(aux);
 					} catch (EOFException e) {
 						// Fin del archivo alcanzado
 						finArchivo = true;
@@ -48,9 +49,19 @@ public class Animal_V2 {
 		} else {
 			System.out.println("Fichero nuevo");
 		}
+		if(animales.isEmpty())
+		{
+			System.out.println("No hay animales registrados");
+		}else
+		{
+			for(Animal animal : animales)
+			{
+				System.out.println(animal.toString());
+			}
+		}
 	}
 
-	public static void añadir(File fich) {
+	public static void añadir(File fich,ArrayList<Animal> animales) {
 		String id, nombre;
 		int edad;
 
@@ -66,7 +77,8 @@ public class Animal_V2 {
 				System.out.println("Introduce la edad: ");
 				edad = Utilidades.leerInt();
 				Animal aux = new Animal(id, nombre, edad);
-				moos.writeObject(aux);
+				animales.add(aux);
+				moos.writeObject(animales);
 				moos.close();
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -88,7 +100,8 @@ public class Animal_V2 {
 				System.out.println("Introduce la edad: ");
 				edad = Utilidades.leerInt();
 				Animal aux = new Animal(id, nombre, edad);
-				oos.writeObject(aux);
+				animales.add(aux);
+				oos.writeObject(animales);
 				oos.close();
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -101,16 +114,26 @@ public class Animal_V2 {
 		}
 	}
 
-	public static void modificarEdad(File fich) {
+	public static void modificarEdad(File fich,ArrayList<Animal> animales) {
 		boolean modificado = false;
 		boolean finArchivo = false;
+		boolean encontrado = false;
 		File fichAux = new File("fichAux.dat");
 
 		int edadMod;
+		int pos=0;
 
 		String id;
 		System.out.println("Introduce el id del animal a modificar edad");
 		id = Utilidades.introducirCadena();
+		
+		for(int i=0;i<animales.size()&&!encontrado;i++)
+		{
+			if(animales.get(i).getId().equalsIgnoreCase(id))
+			{
+				pos=i;
+			}
+		}
 
 		if (fich.exists()) {
 			try {
@@ -124,13 +147,13 @@ public class Animal_V2 {
 						if (aux.getId().equalsIgnoreCase(id)) {
 							System.out.println("Introduce la nueva edad");
 							edadMod = Utilidades.leerInt();
-							aux.setEdad(edadMod);
+							animales.get(pos).setEdad(edadMod);
 							System.out.println("Edad modificada");
 							modificado = true;
 						} else {
 							System.out.println("No hay un animal con ese id");
 						}
-						oos.writeObject(aux);
+						oos.writeObject(animales);
 					} catch (EOFException e) {
 						// Fin del archivo alcanzado
 						finArchivo = true;
@@ -139,7 +162,7 @@ public class Animal_V2 {
 				oos.close();
 				ois.close();
 				if (modificado) {
-					System.out.println("Animal modificado");
+					System.out.println("ArrayList modificado");
 					if (fich.delete()) {
 						fichAux.renameTo(fich);
 					}
@@ -153,7 +176,7 @@ public class Animal_V2 {
 		}
 	}
 
-	public static void eliminar(File fich) {
+	public static void eliminar(File fich,ArrayList<Animal> animales) {
 		File fichAux = new File("animalesAux.dat");
 		boolean finArchivo = false;
 		boolean modificado = false;
@@ -205,21 +228,43 @@ public class Animal_V2 {
 		// TODO Auto-generated method stub
 
 		int opcion;
-		File fich = new File("animales.dat");
+		File fich = new File("animalesV2.dat");
+		
+		Animal a1 = new Animal("1","Leon", 3);
+		Animal a2 = new Animal("2","Cabra", 2);
+		
+		ArrayList<Animal> animales =new ArrayList<>();
+		animales.add(a1);
+		animales.add(a2);
+		
+		ObjectOutputStream oos = null;
+
+		try {
+			oos = new ObjectOutputStream(new FileOutputStream(fich));
+			oos.writeObject(animales);
+			oos.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		do {
 			opcion = mostrarMenu();
 			switch (opcion) {
 			case 1:
-				mostrarAnimales(fich);
+				mostrarAnimales(fich,animales);
 				break;
 			case 2:
-				añadir(fich);
+				añadir(fich,animales);
 				break;
 			case 3:
-				modificarEdad(fich);
+				modificarEdad(fich,animales);
 				break;
 			case 4:
-				eliminar(fich);
+				eliminar(fich,animales);
 				break;
 			}
 		} while (opcion != 5);
