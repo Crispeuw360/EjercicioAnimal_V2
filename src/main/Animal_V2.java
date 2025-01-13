@@ -208,10 +208,11 @@ public class Animal_V2 {
 				oos.close();
 				ois.close();
 				if (modificado) {
-					System.out.println("Animal eliminado");
-					if (fich.delete()) {
-						fichAux.renameTo(fich);
-					}
+					if (fich.delete() && fichAux.renameTo(fich)) {
+			            System.out.println("Animal eliminado exitosamente.");
+			        } else {
+			            System.out.println("Error al reemplazar el fichero original.");
+			        }
 				} else {
 					System.out.println("No existe un animal con ese id");
 				}
